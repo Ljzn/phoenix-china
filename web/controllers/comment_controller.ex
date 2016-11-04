@@ -1,7 +1,7 @@
 defmodule PhoenixChina.CommentController do
   use PhoenixChina.Web, :controller
 
-  alias PhoenixChina.{User, Comment, Post, Notification}
+  alias PhoenixChina.{Comment, Post, Notification}
 
   import PhoenixChina.ViewHelpers, only: [current_user: 1]
   import PhoenixChina.Ecto.Helpers, only: [increment: 2, update_field: 3]
@@ -43,50 +43,11 @@ defmodule PhoenixChina.CommentController do
         |> update_field(:latest_comment_inserted_at, comment.inserted_at)
         |> increment(:comment_count)
 
-        Enum.map(Regex.scan(~r/@(\S+)\s?/, comment.content), fn [_, username] ->
-          user = User |> Repo.get_by(username: username)
-
-          if user && (user != current_user) do
-            notification_html = Notification.render "at_comment.html",
-              conn: conn,
-              user: current_user,
-              post: post,
-              comment: comment
-
-
-            Notification.publish(
-              "at_comment",
-              user.id,
-              current_user.id,
-              comment.id,
-              notification_html
-            )
-
-            user |> increment(:unread_notifications_count)
-          end
-        end)
-
-        if current_user.id != post.user_id do
-          notification_html = Notification.render "comment.html",
-            conn: conn,
-            user: current_user,
-            post: post,
-            comment: comment
-
-          Notification.publish(
-            "comment_post",
-            post.user_id,
-            current_user.id,
-            post.id,
-            notification_html
-          )
-
-          post.user |> increment(:unread_notifications_count)
-        end
+        Notification.create(conn, comment)
 
         conn |> put_flash(:info, "评论创建成功.")
       {:error, _changeset} ->
-        conn |> put_flash(:error, "评论创建失败.")
+        conn |> put_flash(:error, "评论创建失败, 评论不能超过1000字.")
     end
     |> redirect(to: post_path(conn, :show, post_id))
   end

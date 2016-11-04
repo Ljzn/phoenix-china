@@ -33,11 +33,18 @@
 
               <%= link "首页", to: "/", class: "nav-item" %>
               <%= link "学习Elixir", to: "https://wizardforcel.gitbooks.io/programming-elixir/content/", class: "nav-item", target: "_blank" %>
-              <%= link "指南", to: "https://mydearxym.gitbooks.io/phoenix-doc-in-chinese/content/", class: "nav-item", target: "_blank" %>
+              <%= link "中文指南", to: "https://mydearxym.gitbooks.io/phoenix-doc-in-chinese/content/", class: "nav-item", target: "_blank" %>
+
+              <%= link to: "https://github.com/chenxsan/PhoenixFramework", class: "nav-item", target: "_blank" do %>
+                <span class="icon is-small is-danger">
+                  <i class="fa fa-fire"></i>
+                </span>
+                <span>中文教程</span>
+              <%= end %>
             </div>
 
             <%= if @conn.assigns[:title] do %>
-            <div class="nav-center">
+            <div class="nav-center is-hidden-mobile">
               <h1 class="nav-item title is-5"><%= @conn.assigns[:title] %></h1>
             </div>
             <%= end %>
@@ -121,5 +128,23 @@
     </footer>
 
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+
+    <%= if logged_in?(@conn) do %>
+    <div id="zheye-web-chat"></div>
+    <script type="text/javascript">
+      var zheye = {};
+
+      zheye.config  = {
+        webchat: {
+          origin_id: "<%= current_user(@conn).id %>", // 用户id 唯一
+          id: "<%= current_user(@conn).id %>",
+          name: "<%= current_user(@conn) |> fullname %>", // 用户名称
+          avatar: "<%= current_user(@conn).avatar %>", // 头像
+          bio: "<%= current_user(@conn).bio %>" // 签名
+        }
+      }
+    </script>
+    <script src="http://www.zheye.im/js/app-55bea306fad9704771e363cc88446b34.js?vsn=d"></script>
+    <%= end %>
   </body>
 </html>
